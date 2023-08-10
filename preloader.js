@@ -5,22 +5,34 @@ const container = document.querySelector('.page-wrapper');
 // set the initial visibility of the container to 'hidden'
 container.style.visibility = 'hidden';
 
+// check if the user is accessing the main URL directly
+const referringURL = document.referrer;
+const currentURL = window.location.href;
+
+// check if the referring URL is from an external source (not the same domain)
+const isExternalReferrer = referringURL && !referringURL.includes(currentURL);
+
+// check if Webflow's Editor mode is active (by finding any class containing 'w-editor')
+const isWebflowEditor = [...document.documentElement.classList].some(className => className.includes('w-editor'));
+
 // function to handle the display of the preloader and content
 function handleDisplay(isEditorMode) {
-  const showContent = () => {
-    preloader.classList.remove('preload-hidden');
-    container.style.visibility = 'visible';
-  };
+  if ((isDirectAccess || isExternalReferrer) && !isEditorMode) {
+    const showContent = () => {
+      preloader.classList.remove('preload-hidden');
+      container.style.visibility = 'visible';
+    };
 
-  if (isEditorMode) {
-    showContent();
-  } else {
     if (document.readyState === 'complete') {
       setTimeout(showContent, 0);
     } else {
       window.addEventListener('load', showContent);
       document.addEventListener('DOMContentLoaded', showContent);
     }
+  } else {
+    // show the website content immediately (if the user is not accessing the main URL directly, or is navigating within the site, or if Webflow's Editor mode is active)
+    preloader.classList.add('preload-hidden');
+    container.style.visibility = 'visible';
   }
 }
 
